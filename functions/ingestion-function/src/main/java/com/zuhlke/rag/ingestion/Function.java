@@ -29,14 +29,21 @@ public class Function {
     private final ObjectMapper objectMapper;
 
     public Function() {
-        // TODO: Initialize clients with proper error handling
-        this.blobServiceClient = new BlobServiceClientBuilder()
-                .connectionString(STORAGE_CONNECTION_STRING)
-                .buildClient();
-        this.queueServiceClient = new QueueServiceClientBuilder()
-                .connectionString(STORAGE_CONNECTION_STRING)
-                .buildClient();
-        this.objectMapper = new ObjectMapper();
+        if (STORAGE_CONNECTION_STRING == null || STORAGE_CONNECTION_STRING.isBlank()) {
+            throw new IllegalStateException("AzureWebJobsStorage connection string is not configured");
+        }
+        
+        try {
+            this.blobServiceClient = new BlobServiceClientBuilder()
+                    .connectionString(STORAGE_CONNECTION_STRING)
+                    .buildClient();
+            this.queueServiceClient = new QueueServiceClientBuilder()
+                    .connectionString(STORAGE_CONNECTION_STRING)
+                    .buildClient();
+            this.objectMapper = new ObjectMapper();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize Azure clients", e);
+        }
     }
 
     @FunctionName("processDocument")
