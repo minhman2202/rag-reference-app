@@ -4,8 +4,6 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.queue.QueueServiceClient;
-import com.azure.storage.queue.QueueServiceClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.OutputBinding;
@@ -40,7 +38,6 @@ public class Function {
     );
     
     private final BlobServiceClient blobServiceClient;
-    private final QueueServiceClient queueServiceClient;
     private final ObjectMapper objectMapper;
 
     public Function() {
@@ -50,9 +47,6 @@ public class Function {
         
         try {
             this.blobServiceClient = new BlobServiceClientBuilder()
-                    .connectionString(STORAGE_CONNECTION_STRING)
-                    .buildClient();
-            this.queueServiceClient = new QueueServiceClientBuilder()
                     .connectionString(STORAGE_CONNECTION_STRING)
                     .buildClient();
             this.objectMapper = new ObjectMapper();
