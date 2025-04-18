@@ -16,13 +16,28 @@ import com.zuhlke.rag.ingestion.model.DocumentMetadata;
 import com.zuhlke.rag.ingestion.model.ProcessingMessage;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.URL;
+import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 public class Function {
     private static final String STORAGE_CONNECTION_STRING = System.getenv("AzureWebJobsStorage");
     private static final String PROCESSING_QUEUE_NAME = "document-processing-queue";
     private static final String RAW_DOCUMENTS_CONTAINER = "raw-documents";
+    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "text/plain",
+            "text/html"
+    );
     
     private final BlobServiceClient blobServiceClient;
     private final QueueServiceClient queueServiceClient;
@@ -54,11 +69,9 @@ public class Function {
                         connection = "AzureWebJobsStorage") OutputBinding<String> output,
             final ExecutionContext context) {
         try {
-            // TODO: Parse EventGrid event to get blob URL and metadata
             Map<String, Object> eventData = objectMapper.readValue(event, Map.class);
             String blobUrl = extractBlobUrl(eventData);
             
-            // TODO: Validate document type and size
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(RAW_DOCUMENTS_CONTAINER);
             BlobClient blobClient = containerClient.getBlobClient(extractBlobName(blobUrl));
             
@@ -67,13 +80,8 @@ public class Function {
                 return;
             }
 
-            // TODO: Extract metadata
             DocumentMetadata metadata = extractMetadata(blobClient);
-
-            // TODO: Create processing message
             ProcessingMessage message = createProcessingMessage(blobClient, metadata);
-
-            // TODO: Send to processing queue
             output.setValue(objectMapper.writeValueAsString(message));
             
             log.info("Successfully queued document for processing: {}", blobUrl);
@@ -84,34 +92,77 @@ public class Function {
     }
 
     private String extractBlobUrl(Map<String, Object> eventData) {
-        // TODO: Implement blob URL extraction from EventGrid event
-        return null;
+        @SuppressWarnings("unchecked")
+        Map<String, Object> data = (Map<String, Object>) eventData.get("data");
+        if (data == null) {
+            throw new IllegalArgumentException("Event data is missing 'data' field");
+        }
+        
+        String url = (String) data.get("url");
+        if (url == null || url.isBlank()) {
+            throw new IllegalArgumentException("Event data is missing 'url' field");
+        }
+        
+        return url;
     }
 
     private String extractBlobName(String blobUrl) {
-        // TODO: Implement blob name extraction from URL
-        return null;
+        try {
+            URL url = new URL(blobUrl);
+            String path = url.getPath();
+            // Remove container name from path
+            return path.substring(path.indexOf('/', 1) + 1);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid blob URL: " + blobUrl, e);
+        }
     }
 
     private boolean isValidDocument(BlobClient blobClient) {
-        // TODO: Implement document validation
-        // - Check file type (PDF, DOCX, etc.)
-        // - Check file size
-        // - Check if document is not corrupted
-        return true;
+        try {
+            if (!blobClient.exists()) {
+                log.error("Blob does not exist: {}", blobClient.getBlobUrl());
+                return false;
+            }
+
+            long size = blobClient.getProperties().getBlobSize();
+            if (size > MAX_FILE_SIZE) {
+                log.error("Document size {} exceeds maximum allowed size {}", size, MAX_FILE_SIZE);
+                return false;
+            }
+
+            String contentType = blobClient.getProperties().getContentType();
+            if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
+                log.error("Content type {} is not allowed", contentType);
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("Error validating document: {}", e.getMessage(), e);
+            return false;
+        }
     }
 
     private DocumentMetadata extractMetadata(BlobClient blobClient) {
-        // TODO: Implement metadata extraction
-        // - File name
-        // - File type
-        // - File size
-        // - Upload date
-        return null;
+        try {
+            return DocumentMetadata.builder()
+                    .fileName(blobClient.getBlobName())
+                    .fileType(blobClient.getProperties().getContentType())
+                    .fileSize(blobClient.getProperties().getBlobSize())
+                    .uploadDate(Instant.now())
+                    .blobUrl(blobClient.getBlobUrl())
+                    .contentType(blobClient.getProperties().getContentType())
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract metadata", e);
+        }
     }
 
     private ProcessingMessage createProcessingMessage(BlobClient blobClient, DocumentMetadata metadata) {
-        // TODO: Create processing message with all necessary information
-        return null;
+        return ProcessingMessage.builder()
+                .blobUrl(blobClient.getBlobUrl())
+                .metadata(metadata)
+                .processingStatus("PENDING")
+                .build();
     }
 } 
