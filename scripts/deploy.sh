@@ -69,10 +69,10 @@ cd "$PROJECT_ROOT/functions/ingestion-function"
 STORAGE_ACCOUNT_NAME=$(az storage account list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
 STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name $STORAGE_ACCOUNT_NAME --resource-group $RESOURCE_GROUP --query "connectionString" -o tsv)
 
-mvn clean package -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING"
+mvn clean package -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING" -Dazure.functions.maven.plugin.skip=false
 
 echo "Deploying function..."
-mvn azure-functions:deploy -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING"
+mvn azure-functions:deploy -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING" -Dazure.functions.maven.plugin.skip=false
 
 # Wait for function app to be ready
 echo "Waiting for function app to be ready..."

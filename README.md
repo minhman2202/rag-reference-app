@@ -81,6 +81,40 @@ A document management system leveraging Azure AI Foundry platform for intelligen
    # Edit .env with your Azure credentials
    ```
 
+4. For Functions module, navigate to the function directory and set up environment:
+   ```bash
+   cd functions/ingestion-function
+   source setenv.sh
+   ```
+
+5. Common Maven commands for Functions module:
+   ```bash
+   # Build without tests
+   mvn clean install -DskipTests
+
+   # Run unit tests
+   mvn test
+
+   # Run integration tests
+   mvn verify -P integration-test
+
+   # Run all tests
+   mvn verify
+
+   # Build and run all tests
+   mvn clean verify
+   ```
+
+   Or use the convenience commands after sourcing setenv.sh:
+   ```bash
+   build          # Build without tests
+   test          # Run unit tests
+   integration   # Run integration tests
+   all           # Run all tests
+   build-test    # Build and run all tests
+   help          # Show help
+   ```
+
 ### Deployment
 
 1. Install Azure CLI and login:
@@ -113,10 +147,64 @@ rag-reference-app/
 ├── backend/           # Spring Boot API
 ├── functions/         # Azure Functions
 │   ├── ingestion-function/
+│   │   ├── src/      # Source code
+│   │   ├── pom.xml   # Maven configuration
+│   │   └── setenv.sh # Development environment setup
 │   └── processing-function/
 ├── infrastructure/    # IaC (Bicep)
 └── scripts/           # Deployment scripts
 ```
+
+## Functions Module
+
+### Development Setup
+
+1. Navigate to the function directory:
+   ```bash
+   cd functions/ingestion-function
+   ```
+
+2. Set up development environment:
+   ```bash
+   source setenv.sh
+   ```
+
+3. Available commands after sourcing setenv.sh:
+   ```bash
+   build          # Build without tests
+   test          # Run unit tests
+   integration   # Run integration tests
+   all           # Run all tests
+   build-test    # Build and run all tests
+   help          # Show help
+   ```
+
+### Testing
+
+- Unit tests run by default with `mvn test`
+- Integration tests require Azure Storage connection string
+- Integration tests are skipped by default in regular builds
+- Run integration tests with `integration` command
+
+### Deployment
+
+1. Make sure you're logged into Azure:
+   ```bash
+   az login
+   ```
+
+2. Deploy using the deployment script:
+   ```bash
+   # From project root
+   ./scripts/deploy.sh -e dev
+   ```
+
+### Environment Variables
+
+The following environment variables are set up by setenv.sh:
+- `AZURE_STORAGE_CONNECTION_STRING`: For test storage account
+- `JAVA_HOME`: Java 17 home directory
+- `PATH`: Includes Maven if not already present
 
 ## Features
 
