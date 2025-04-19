@@ -1,64 +1,50 @@
-param location string = 'southeastasia'
+param location string = resourceGroup().location
 param environment string = 'dev'
-param storageAccountName string = 'ragstorage${uniqueString(resourceGroup().id)}'
 param functionAppName string = 'rag-ingestion-function-${environment}'
+param storageAccountName string = 'ragstorage${uniqueString(resourceGroup().id)}'
+param appServicePlanName string = 'rag-asp-${environment}'
+param docIntelligenceName string = 'rag-doc-intelligence-${environment}'
 
 var resourceTags = {
   environment: environment
   project: 'rag-reference-app'
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: storageAccountName
-  location: location
-  tags: resourceTags
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
+module storage 'modules/storage.bicep' = {
+  name: 'storage'
+  params: {
+    location: location
+    storageAccountName: storageAccountName
+    tags: resourceTags
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: functionAppName
-  location: location
-  tags: resourceTags
-  kind: 'functionapp,linux'
-  properties: {
-    serverFarmId: appServicePlan.id
-    siteConfig: {
-      linuxFxVersion: 'java|17'
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'java'
-        }
-      ]
-    }
+module docIntelligence 'modules/docintelligence.bicep' = {
+  name: 'docIntelligence'
+  params: {
+    location: location
+    docIntelligenceName: docIntelligenceName
+    tags: resourceTags
   }
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'rag-service-plan-${environment}'
-  location: location
-  tags: resourceTags
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
+module function 'modules/function.bicep' = {
+  name: 'function'
+  params: {
+    location: location
+    functionAppName: functionAppName
+    appServicePlanName: appServicePlanName
+    storageAccountName: storageAccountName
+    storageBlobEndpoint: storage.outputs.blobEndpoint
+    storageConnectionString: storage.outputs.connectionString
+    docIntelligenceEndpoint: docIntelligence.outputs.endpoint
+    docIntelligenceKey: docIntelligence.outputs.key
+    tags: resourceTags
   }
-  kind: 'linux'
-  properties: {
-    reserved: true
-  }
+  dependsOn: [
+    storage
+    docIntelligence
+  ]
 }
+
+output functionAppUrl string = function.outputs.functionAppUrl

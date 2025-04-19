@@ -1,6 +1,6 @@
 {
   "scriptFile" : "../ingestion-function-1.0-SNAPSHOT.jar",
-  "entryPoint" : "com.zuhlke.rag.ingestion.Function.run",
+  "entryPoint" : "com.zuhlke.rag.ingestion.DocumentIngestFunction.run",
   "configurationSource" : "attributes",
   "bindings" : [ {
     "type" : "eventGridTrigger",
