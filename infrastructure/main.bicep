@@ -62,21 +62,3 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     reserved: true
   }
 }
-
-resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2022-06-15' = {
-  name: 'document-upload-subscription'
-  scope: storageAccount
-  properties: {
-    destination: {
-      endpointType: 'AzureFunction'
-      properties: {
-        resourceId: '${functionApp.id}/functions/processDocument'
-      }
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Storage.BlobCreated'
-      ]
-    }
-  }
-}

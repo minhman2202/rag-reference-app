@@ -20,6 +20,7 @@
         <functionAppName>rag-ingestion-function-${environment}</functionAppName>
         <functionAppRegion>southeastasia</functionAppRegion>
         <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}</stagingDirectory>
+        <storageConnectionString>your-storage-connection-string</storageConnectionString>
     </properties>
 
     <dependencies>
@@ -91,6 +92,10 @@
                         <property>
                             <name>FUNCTIONS_EXTENSION_VERSION</name>
                             <value>~4</value>
+                        </property>
+                        <property>
+                            <name>AzureWebJobsStorage</name>
+                            <value>${storageConnectionString}</value>
                         </property>
                     </appSettings>
                 </configuration>

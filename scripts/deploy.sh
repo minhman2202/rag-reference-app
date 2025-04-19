@@ -26,6 +26,7 @@ echo "Deploying with parameters:"
 echo "Environment: $ENVIRONMENT"
 echo "Location: $LOCATION"
 echo "Resource Group: $RESOURCE_GROUP"
+echo "Function App Name: rag-ingestion-function-$ENVIRONMENT"
 
 # Check if Azure CLI is installed
 if ! command -v az &> /dev/null; then
@@ -43,6 +44,11 @@ fi
 echo "Logging in to Azure..."
 az login
 
+# Set the subscription
+echo "Setting subscription..."
+SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+az account set --subscription $SUBSCRIPTION_ID
+
 # Create resource group if it doesn't exist
 echo "Creating resource group..."
 az group create --name $RESOURCE_GROUP --location $LOCATION --output none
@@ -58,9 +64,30 @@ az deployment group create \
 # Build and deploy function
 echo "Building function..."
 cd "$PROJECT_ROOT/functions/ingestion-function"
-mvn clean package
+
+# Get storage connection string
+STORAGE_ACCOUNT_NAME=$(az storage account list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
+STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name $STORAGE_ACCOUNT_NAME --resource-group $RESOURCE_GROUP --query "connectionString" -o tsv)
+
+mvn clean package -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING"
 
 echo "Deploying function..."
-mvn azure-functions:deploy
+mvn azure-functions:deploy -Denvironment=$ENVIRONMENT -DstorageConnectionString="$STORAGE_CONNECTION_STRING"
+
+# Wait for function app to be ready
+echo "Waiting for function app to be ready..."
+sleep 60
+
+# Create Event Grid subscription
+echo "Creating Event Grid subscription..."
+STORAGE_ACCOUNT_NAME=$(az storage account list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
+FUNCTION_APP_ID=$(az functionapp show --name "rag-ingestion-function-$ENVIRONMENT" --resource-group $RESOURCE_GROUP --query "id" -o tsv)
+
+az eventgrid event-subscription create \
+    --name "document-upload-subscription" \
+    --source-resource-id "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Storage/storageAccounts/$STORAGE_ACCOUNT_NAME" \
+    --endpoint-type "azurefunction" \
+    --endpoint "$FUNCTION_APP_ID/functions/processDocument" \
+    --included-event-types "Microsoft.Storage.BlobCreated"
 
 echo "Deployment completed successfully!" 
