@@ -116,7 +116,6 @@
                 <artifactId>azure-functions-maven-plugin</artifactId>
                 <version>${azure.functions.maven.plugin.version}</version>
                 <configuration>
-                    <skip>true</skip>
                     <appName>${functionAppName}</appName>
                     <resourceGroup>rag-resource-group</resourceGroup>
                     <region>${functionAppRegion}</region>
