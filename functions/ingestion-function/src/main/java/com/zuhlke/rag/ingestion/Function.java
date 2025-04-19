@@ -5,6 +5,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.OutputBinding;
 import com.microsoft.azure.functions.annotation.EventGridTrigger;
@@ -50,6 +51,7 @@ public class Function {
                     .connectionString(STORAGE_CONNECTION_STRING)
                     .buildClient();
             this.objectMapper = new ObjectMapper();
+            this.objectMapper.registerModule(new JavaTimeModule());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to initialize Azure clients", e);
         }

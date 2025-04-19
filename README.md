@@ -127,15 +127,23 @@ A document management system leveraging Azure AI Foundry platform for intelligen
 
 ```
 rag-reference-app/
-├── frontend/          # React frontend
-├── backend/           # Spring Boot API
-├── functions/         # Azure Functions
+├── .github/
+│   └── workflows/           # GitHub Actions for CI/CD
+├── data/                    # Test data (pdf, txt, doc)
+├── frontend/                # React frontend
+├── backend/                 # Spring Boot API
+├── functions/               # Azure Functions
 │   ├── ingestion-function/
-│   │   ├── src/      # Source code
-│   │   ├── pom.xml   # Maven configuration
+│   │   ├── src/             # Source code
+│   │   ├── pom.xml          # Maven configuration
 │   └── processing-function/
-├── infrastructure/    # IaC (Bicep)
-└── scripts/           # Deployment scripts
+├── infrastructure/          # IaC (Bicep)
+│   ├── main.bicep           # Main Bicep template
+│   └── modules/             # Bicep modules
+├── scripts/                 # Deployment scripts
+├── .env.example             # Environment variables template
+├── README.md                # Project documentation
+└── azure-pipelines.yml      # Azure DevOps pipeline
 ```
 
 
