@@ -8,22 +8,22 @@ A document management system leveraging Azure AI Foundry platform for intelligen
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                            Data Ingestion Layer                          │
+│                            Data Ingestion Layer                         │
 └─────────────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                            Processing Layer                              │
+│                            Processing Layer                             │
 └─────────────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                            Search & Storage Layer                        │
+│                            Search & Storage Layer                       │
 └─────────────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                            Application Layer                             │
+│                            Application Layer                            │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -57,7 +57,7 @@ A document management system leveraging Azure AI Foundry platform for intelligen
 - Azure CLI
 - Azure Functions Core Tools
 - Maven
-- PowerShell 7.0+
+- Bash shell
 
 ## Getting Started
 
@@ -88,9 +88,21 @@ A document management system leveraging Azure AI Foundry platform for intelligen
    az login
    ```
 
-2. Deploy infrastructure and function:
+2. Make deployment script executable:
    ```bash
-   ./scripts/deploy.ps1 -Environment dev
+   chmod +x scripts/deploy.sh
+   ```
+
+3. Deploy infrastructure and function:
+   ```bash
+   # Deploy to dev environment
+   ./scripts/deploy.sh -e dev
+
+   # Deploy to specific region
+   ./scripts/deploy.sh -e dev -l southeastasia
+
+   # Deploy with custom resource group
+   ./scripts/deploy.sh -e dev -g my-resource-group
    ```
 
 ## Project Structure
