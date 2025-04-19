@@ -115,7 +115,7 @@ rag-reference-app/
 │   ├── ingestion-function/
 │   └── processing-function/
 ├── infrastructure/    # IaC (Bicep)
-└── scripts/          # Deployment scripts
+└── scripts/           # Deployment scripts
 ```
 
 ## Features

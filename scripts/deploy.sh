@@ -3,6 +3,10 @@
 # Exit on error
 set -e
 
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 # Default values
 ENVIRONMENT="dev"
 LOCATION="southeastasia"
@@ -47,13 +51,13 @@ az group create --name $RESOURCE_GROUP --location $LOCATION --output none
 echo "Deploying infrastructure..."
 az deployment group create \
     --resource-group $RESOURCE_GROUP \
-    --template-file ../infrastructure/main.bicep \
+    --template-file "$PROJECT_ROOT/infrastructure/main.bicep" \
     --parameters environment=$ENVIRONMENT \
     --output none
 
 # Build and deploy function
 echo "Building function..."
-cd ../functions/ingestion-function
+cd "$PROJECT_ROOT/functions/ingestion-function"
 mvn clean package
 
 echo "Deploying function..."
