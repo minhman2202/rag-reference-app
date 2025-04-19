@@ -34,17 +34,11 @@ module function 'modules/function.bicep' = {
     location: location
     functionAppName: functionAppName
     appServicePlanName: appServicePlanName
-    storageAccountName: storageAccountName
-    storageBlobEndpoint: storage.outputs.blobEndpoint
     storageConnectionString: storage.outputs.connectionString
     docIntelligenceEndpoint: docIntelligence.outputs.endpoint
     docIntelligenceKey: docIntelligence.outputs.key
     tags: resourceTags
   }
-  dependsOn: [
-    storage
-    docIntelligence
-  ]
 }
 
 output functionAppUrl string = function.outputs.functionAppUrl

@@ -74,7 +74,13 @@ deploy_infrastructure() {
         exit 1
     fi
     echo "Function App URL: $FUNCTION_APP_URL"
+}
 
+# Build and deploy function
+deploy_function() {
+    echo "Building and deploying function app..."
+    cd "$PROJECT_ROOT/functions/ingestion-function"
+    
     # Get storage connection string
     STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
         --name "ragstorage$ENVIRONMENT" \
@@ -85,12 +91,6 @@ deploy_infrastructure() {
         echo "Failed to get storage connection string"
         exit 1
     fi
-}
-
-# Build and deploy function
-deploy_function() {
-    echo "Building and deploying function app..."
-    cd "$PROJECT_ROOT/functions/ingestion-function"
     
     # Clean previous build
     rm -rf target

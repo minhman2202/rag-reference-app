@@ -1,8 +1,6 @@
 param location string
 param functionAppName string
 param appServicePlanName string
-param storageAccountName string
-param storageBlobEndpoint string
 param storageConnectionString string
 param docIntelligenceEndpoint string
 param docIntelligenceKey string

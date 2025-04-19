@@ -17,10 +17,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
-  name: '${storageAccountName}/default'
-  dependsOn: [
-    storageAccount
-  ]
+  parent: storageAccount
+  name: 'default'
   properties: {
     cors: {
       corsRules: []
@@ -29,30 +27,24 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01'
 }
 
 resource incomingContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  name: '${storageAccountName}/default/incoming'
-  dependsOn: [
-    blobService
-  ]
+  parent: blobService
+  name: 'incoming'
   properties: {
     publicAccess: 'None'
   }
 }
 
 resource processedContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  name: '${storageAccountName}/default/processed'
-  dependsOn: [
-    blobService
-  ]
+  parent: blobService
+  name: 'processed'
   properties: {
     publicAccess: 'None'
   }
 }
 
 resource failedContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
-  name: '${storageAccountName}/default/failed'
-  dependsOn: [
-    blobService
-  ]
+  parent: blobService
+  name: 'failed'
   properties: {
     publicAccess: 'None'
   }
