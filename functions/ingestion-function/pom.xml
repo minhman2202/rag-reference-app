@@ -17,8 +17,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <azure.functions.maven.plugin.version>1.27.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>3.0.0</azure.functions.java.library.version>
-        <functionAppName>rag-ingestion-function</functionAppName>
-        <functionAppRegion>westeurope</functionAppRegion>
+        <functionAppName>rag-ingestion-function-${environment}</functionAppName>
+        <functionAppRegion>southeastasia</functionAppRegion>
         <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}</stagingDirectory>
     </properties>
 
@@ -82,7 +82,6 @@
                 <configuration>
                     <appName>${functionAppName}</appName>
                     <resourceGroup>rag-resource-group</resourceGroup>
-                    <appServicePlanName>rag-service-plan</appServicePlanName>
                     <region>${functionAppRegion}</region>
                     <runtime>
                         <os>linux</os>
