@@ -81,13 +81,7 @@ A document management system leveraging Azure AI Foundry platform for intelligen
    # Edit .env with your Azure credentials
    ```
 
-4. For Functions module, navigate to the function directory and set up environment:
-   ```bash
-   cd functions/ingestion-function
-   source setenv.sh
-   ```
-
-5. Common Maven commands for Functions module:
+4. For Functions module, navigate to the function directory and use the following commands:
    ```bash
    # Build without tests
    mvn clean install -DskipTests
@@ -104,17 +98,7 @@ A document management system leveraging Azure AI Foundry platform for intelligen
    # Build and run all tests
    mvn clean verify
    ```
-
-   Or use the convenience commands after sourcing setenv.sh:
-   ```bash
-   build          # Build without tests
-   test          # Run unit tests
-   integration   # Run integration tests
-   all           # Run all tests
-   build-test    # Build and run all tests
-   help          # Show help
-   ```
-
+   
 ### Deployment
 
 1. Install Azure CLI and login:
