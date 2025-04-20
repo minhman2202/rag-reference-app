@@ -59,7 +59,6 @@ public class DocumentIngestFunction {
             logger.info("Analysis result saved to /processed/" + fileName + ".json");
         } catch (Exception e) {
             logger.severe("Document analysis failed: " + e.getMessage());
-            outputBlob.setValue(getStackTraceAsString(e));
         }
     }
 
@@ -83,7 +82,7 @@ public class DocumentIngestFunction {
     }
 
     private String pollAnalyzeResult(String url, String apiKey, Logger logger) throws Exception {
-      int maxRetries = 5;
+      int maxRetries = 10;
       int delayMs = 2000;
   
       HttpClient httpClient = HttpClients.createDefault();
