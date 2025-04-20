@@ -15,8 +15,12 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -25,7 +29,6 @@ public class DocumentIngestFunction {
 
     private static final Set<String> SUPPORTED_TYPES = Set.of(".pdf", ".docx", ".pptx", ".xlsx", ".txt", ".html");
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final HttpClient httpClient = HttpClients.createDefault();
 
     @FunctionName("BlobTriggerDocIngest")
     public void run(
@@ -56,6 +59,7 @@ public class DocumentIngestFunction {
             logger.info("Analysis result saved to /processed/" + fileName + ".json");
         } catch (Exception e) {
             logger.severe("Document analysis failed: " + e.getMessage());
+            outputBlob.setValue(getStackTraceAsString(e));
         }
     }
 
@@ -65,6 +69,7 @@ public class DocumentIngestFunction {
         post.setHeader("Content-Type", "application/octet-stream");
         post.setEntity(new ByteArrayEntity(inputBlob, ContentType.APPLICATION_OCTET_STREAM));
 
+        HttpClient httpClient = HttpClients.createDefault();
         try (ClassicHttpResponse httpResponse = httpClient.execute(post, r -> r)) {
             String operationLocation = Arrays.stream(httpResponse.getHeaders())
                     .filter(h -> h.getName().equalsIgnoreCase("Operation-Location"))
@@ -78,35 +83,80 @@ public class DocumentIngestFunction {
     }
 
     private String pollAnalyzeResult(String url, String apiKey, Logger logger) throws Exception {
-        int maxRetries = 10;
-        int delayMs = 2000;
-
-        for (int attempt = 0; attempt < maxRetries; attempt++) {
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Ocp-Apim-Subscription-Key", apiKey);
-
-            try (ClassicHttpResponse httpResponse = httpClient.execute(get, r -> r)) {
-                String responseJson = new String(httpResponse.getEntity().getContent().readAllBytes());
-                var jsonNode = mapper.readTree(responseJson);
-                String status = jsonNode.get("status").asText();
-
-                if ("succeeded".equalsIgnoreCase(status)) {
-                    logger.info("Document analysis succeeded.");
-                    return responseJson;
-                } else if ("failed".equalsIgnoreCase(status)) {
-                    logger.warning("Document analysis failed.");
-                    break;
-                }
-
-                logger.info("Waiting for analysis to complete...");
-                Thread.sleep(delayMs);
-            }
-        }
-
-        throw new RuntimeException("Document analysis did not complete in time.");
-    }
+      int maxRetries = 5;
+      int delayMs = 2000;
+  
+      HttpClient httpClient = HttpClients.createDefault();
+  
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+          logger.info("Polling for analysis result... Attempt " + attempt);
+  
+          HttpGet get = new HttpGet(url);
+          get.setHeader("Ocp-Apim-Subscription-Key", apiKey);
+  
+          try {
+              String responseJson = httpClient.execute(get, httpResponse -> {
+                  int statusCode = httpResponse.getCode();
+                  logger.info("Received HTTP status code: " + statusCode);
+  
+                  if (statusCode == 429 || statusCode >= 500) {
+                      logger.warning("Transient error (HTTP " + statusCode + "). Will retry.");
+                      return null;
+                  }
+  
+                  HttpEntity entity = httpResponse.getEntity();
+                  if (entity == null) {
+                      throw new IOException("No content returned from service.");
+                  }
+  
+                  try (InputStream content = entity.getContent()) {
+                      return new String(content.readAllBytes());
+                  }
+              });
+  
+              if (responseJson == null) {
+                  // Retry logic
+                  Thread.sleep(delayMs);
+                  continue;
+              }
+  
+              var jsonNode = mapper.readTree(responseJson);
+              String status = jsonNode.get("status").asText();
+  
+              switch (status.toLowerCase()) {
+                  case "succeeded":
+                      logger.info("Document analysis succeeded.");
+                      return responseJson;
+                  case "failed":
+                      logger.warning("Document analysis failed.");
+                      throw new RuntimeException("Document analysis failed.");
+                  default:
+                      logger.info("Analysis not complete yet. Status: " + status);
+              }
+  
+          } catch (Exception e) {
+              logger.severe("Error during poll attempt " + attempt + ": " + e.getMessage());
+              if (attempt == maxRetries) {
+                  throw e;
+              }
+          }
+  
+          logger.info("Waiting " + delayMs + " ms before next attempt...");
+          Thread.sleep(delayMs);
+      }
+  
+      throw new RuntimeException("Document analysis did not complete within retry limit.");
+  }
+  
 
     private boolean isSupportedFile(String fileName) {
         return SUPPORTED_TYPES.stream().anyMatch(fileName.toLowerCase()::endsWith);
     }
+
+    private String getStackTraceAsString(Throwable t) {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      t.printStackTrace(pw);
+      return sw.toString();
+  }
 }
