@@ -4,6 +4,8 @@ param appServicePlanName string
 param storageConnectionString string
 param docIntelligenceEndpoint string
 param docIntelligenceKey string
+param searchEndpoint string
+param searchServiceName string
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
@@ -20,7 +22,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
+resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: functionAppName
   location: location
   tags: tags
@@ -52,6 +54,14 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         {
           name: 'AZURE_DOC_INTELLIGENCE_KEY'
           value: docIntelligenceKey
+        }
+        {
+          name: 'AZURE_SEARCH_ENDPOINT'
+          value: searchEndpoint
+        }
+        {
+          name: 'AZURE_SEARCH_SERVICE_NAME'
+          value: searchServiceName
         }
       ]
       linuxFxVersion: 'JAVA|17'
