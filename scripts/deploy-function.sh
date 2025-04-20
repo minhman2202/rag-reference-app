@@ -10,24 +10,21 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 ENVIRONMENT="dev"
 LOCATION="southeastasia"
 RESOURCE_GROUP="rag-resource-group"
-FUNCTION="all" # all, ingestion, processing
 
 # Parse command line arguments
-while getopts "e:l:g:f:" opt; do
+while getopts "e:l:g:" opt; do
   case $opt in
     e) ENVIRONMENT="$OPTARG" ;;
     l) LOCATION="$OPTARG" ;;
     g) RESOURCE_GROUP="$OPTARG" ;;
-    f) FUNCTION="$OPTARG" ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
   esac
 done
 
-echo "Deploying function with parameters:"
+echo "Deploying functions with parameters:"
 echo "Environment: $ENVIRONMENT"
 echo "Location: $LOCATION"
 echo "Resource Group: $RESOURCE_GROUP"
-echo "Function: $FUNCTION"
 
 check_prerequisites() {
     if ! command -v az &> /dev/null; then
@@ -55,9 +52,9 @@ get_storage_connection_string() {
     echo "$connection_string"
 }
 
-deploy_ingestion_function() {
-    echo "Building and deploying ingestion function..."
-    cd "$PROJECT_ROOT/functions/ingestion-function"
+deploy_functions() {
+    echo "Building and deploying functions..."
+    cd "$PROJECT_ROOT/functions"
     
     STORAGE_CONNECTION_STRING=$(get_storage_connection_string)
     
@@ -69,26 +66,7 @@ deploy_ingestion_function() {
         -Dregion=$LOCATION \
         -DstorageConnectionString="$STORAGE_CONNECTION_STRING" \
         -DskipTests; then
-        echo "Ingestion function deployment failed"
-        exit 1
-    fi
-}
-
-deploy_processing_function() {
-    echo "Building and deploying processing function..."
-    cd "$PROJECT_ROOT/functions/processing-function"
-    
-    STORAGE_CONNECTION_STRING=$(get_storage_connection_string)
-    
-    rm -rf target
-    
-    if ! mvn clean package azure-functions:deploy \
-        -Denvironment=$ENVIRONMENT \
-        -DresourceGroup=$RESOURCE_GROUP \
-        -Dregion=$LOCATION \
-        -DstorageConnectionString="$STORAGE_CONNECTION_STRING" \
-        -DskipTests; then
-        echo "Processing function deployment failed"
+        echo "Functions deployment failed"
         exit 1
     fi
 }
@@ -103,22 +81,7 @@ main() {
     SUBSCRIPTION_ID=$(az account show --query id -o tsv)
     az account set --subscription $SUBSCRIPTION_ID
 
-    case $FUNCTION in
-        "all")
-            deploy_ingestion_function
-            deploy_processing_function
-            ;;
-        "ingestion")
-            deploy_ingestion_function
-            ;;
-        "processing")
-            deploy_processing_function
-            ;;
-        *)
-            echo "Invalid function specified. Use 'all', 'ingestion', or 'processing'"
-            exit 1
-            ;;
-    esac
+    deploy_functions
 
     echo "Function deployment completed successfully!"
 }

@@ -1,0 +1,19 @@
+{
+  "scriptFile": "../functions-1.0-SNAPSHOT.jar",
+  "entryPoint": "com.zuhlke.rag.processing.IndexToAzureSearchFunction.run",
+  "bindings": [
+    {
+      "name": "inputBlob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "processed/{name}",
+      "connection": "AzureWebJobsStorage",
+      "dataType": "binary"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "direction": "in"
+    }
+  ]
+} 

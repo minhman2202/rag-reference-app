@@ -1,0 +1,26 @@
+{
+  "scriptFile": "../functions-1.0-SNAPSHOT.jar",
+  "entryPoint": "com.zuhlke.rag.ingestion.DocumentIngestFunction.run",
+  "bindings": [
+    {
+      "name": "inputBlob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "incoming/{name}",
+      "connection": "AzureWebJobsStorage",
+      "dataType": "binary"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "direction": "in"
+    },
+    {
+      "name": "outputBlob",
+      "type": "blob",
+      "direction": "out",
+      "path": "processed/{name}.json",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+} 
