@@ -33,8 +33,11 @@ public class DocumentIngestFunction {
             return;
         }
 
-        String endpoint = System.getenv("AZURE_DOC_INTELLIGENCE_ENDPOINT");
         String apiKey = System.getenv("AZURE_DOC_INTELLIGENCE_KEY");
+        String endpoint = System.getenv("AZURE_DOC_INTELLIGENCE_ENDPOINT");
+        // Remove trailing slash if exists
+        endpoint = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
+        
         String analyzeUrl = endpoint + "/formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2023-07-31";
 
         try {
