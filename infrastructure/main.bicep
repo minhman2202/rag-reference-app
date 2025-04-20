@@ -1,7 +1,7 @@
 param location string = resourceGroup().location
 param environment string = 'dev'
 param functionAppName string = 'rag-ingestion-function-${environment}'
-param storageAccountName string = 'ragstorage${uniqueString(resourceGroup().id)}'
+param storageAccountName string = 'ragstorageinqs4uargpjkc'
 param appServicePlanName string = 'rag-asp-${environment}'
 param docIntelligenceName string = 'rag-doc-intelligence-${environment}'
 

@@ -83,7 +83,7 @@ deploy_function() {
     
     # Get storage connection string
     STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
-        --name "ragstorage$ENVIRONMENT" \
+        --name "ragstorageinqs4uargpjkc" \
         --resource-group $RESOURCE_GROUP \
         --query connectionString \
         --output tsv)
