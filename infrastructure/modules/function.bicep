@@ -5,6 +5,7 @@ param storageConnectionString string
 param docIntelligenceEndpoint string
 param docIntelligenceKey string
 param searchEndpoint string
+param searchIndexName string
 param searchServiceName string
 param tags object
 
@@ -58,6 +59,10 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'AZURE_SEARCH_ENDPOINT'
           value: searchEndpoint
+        }
+        {
+          name: 'AZURE_SEARCH_INDEX_NAME'
+          value: searchIndexName
         }
         {
           name: 'AZURE_SEARCH_SERVICE_NAME'

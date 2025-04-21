@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.azure.search.documents.SearchClient;
 import com.azure.search.documents.SearchClientBuilder;
 import com.azure.identity.DefaultAzureCredentialBuilder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.logging.Logger;
 import java.util.Collections;
@@ -37,10 +39,8 @@ public class IndexToAzureSearchFunction {
             String content = extractContent(docIntelligenceResult);
             String metadata = extractMetadata(docIntelligenceResult, fileName);
             
-            // TODO: Build search document
             SearchDocument searchDoc = buildSearchDocument(fileName, content, metadata);
             
-            // TODO: Push to Azure AI Search
             indexToAzureSearch(searchDoc, logger);
             
             logger.info("Successfully indexed document: " + fileName);
@@ -122,7 +122,10 @@ public class IndexToAzureSearchFunction {
         }
     }
 
+    @Setter
+    @Getter
     private static class SearchDocument {
+        // Getters and setters for Jackson serialization
         @JsonProperty("id")
         private String id;
 
@@ -135,14 +138,5 @@ public class IndexToAzureSearchFunction {
         @JsonProperty("timestamp")
         private long timestamp;
 
-        // Getters and setters for Jackson serialization
-        public String getId() { return id; }
-        public void setId(String id) { this.id = id; }
-        public String getContent() { return content; }
-        public void setContent(String content) { this.content = content; }
-        public String getMetadata() { return metadata; }
-        public void setMetadata(String metadata) { this.metadata = metadata; }
-        public long getTimestamp() { return timestamp; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
     }
 } 

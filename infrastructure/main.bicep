@@ -34,6 +34,7 @@ module search 'modules/search.bicep' = {
   params: {
     location: location
     searchServiceName: searchServiceName
+    searchIndexName: 'documents'
     tags: resourceTags
   }
 }
@@ -48,6 +49,7 @@ module function 'modules/function.bicep' = {
     docIntelligenceEndpoint: docIntelligence.outputs.endpoint
     docIntelligenceKey: docIntelligence.outputs.key
     searchEndpoint: search.outputs.endpoint
+    searchIndexName: search.outputs.indexName
     searchServiceName: search.outputs.serviceName
     tags: resourceTags
   }
@@ -55,3 +57,4 @@ module function 'modules/function.bicep' = {
 
 output functionAppUrl string = function.outputs.functionAppUrl
 output searchServiceEndpoint string = search.outputs.endpoint
+output searchIndexName string = search.outputs.indexName
