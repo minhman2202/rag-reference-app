@@ -1,6 +1,8 @@
 package com.zuhlke.rag.processing;
 
+import com.microsoft.azure.functions.OutputBinding;
 import com.microsoft.azure.functions.annotation.BindingName;
+import com.microsoft.azure.functions.annotation.BlobOutput;
 import com.microsoft.azure.functions.annotation.BlobTrigger;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -13,6 +15,9 @@ import com.azure.identity.DefaultAzureCredentialBuilder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.Collections;
 
@@ -26,6 +31,7 @@ public class IndexToAzureSearchFunction {
     public void run(
         @BlobTrigger(name = "inputBlob", path = "processed/{name}", dataType = "binary", connection = "AzureWebJobsStorage") byte[] inputBlob,
         @BindingName("name") String fileName,
+        @BlobOutput(name = "outputBlob", path = "failed/{name}.txt", connection = "AzureWebJobsStorage") OutputBinding<String> outputBlob,
         final ExecutionContext context
     ) {
         Logger logger = context.getLogger();
@@ -46,6 +52,7 @@ public class IndexToAzureSearchFunction {
             logger.info("Successfully indexed document: " + fileName);
         } catch (Exception e) {
             logger.severe("Failed to index document: " + e.getMessage());
+            outputBlob.setValue(getStackTraceAsString(e));
         }
     }
 
@@ -54,6 +61,10 @@ public class IndexToAzureSearchFunction {
         
       // Extract text from layout analysis
       JsonNode pages = docIntelligenceResult.path("analyzeResult").path("pages");
+      if (pages == null || !pages.isArray()) {
+          return text.toString();
+      }
+
       for (JsonNode page : pages) {
           JsonNode lines = page.path("lines");
           for (JsonNode line : lines) {
@@ -68,7 +79,7 @@ public class IndexToAzureSearchFunction {
       StringBuilder metadata = new StringBuilder();
         
       // Add filename metadata
-      metadata.append("filename: ").append(fileName).append("\n");
+      metadata.append("filename: ").append(fileName.replace(".json", "")).append("\n");
       
       // Get the analyzeResult
       JsonNode analyzeResult = docIntelligenceResult.get("analyzeResult");
@@ -99,7 +110,8 @@ public class IndexToAzureSearchFunction {
 
     private SearchDocument buildSearchDocument(String fileName, String content, String metadata) {
         SearchDocument doc = new SearchDocument();
-        doc.id = fileName;
+        doc.id = UUID.randomUUID().toString();
+        doc.fileName = fileName;
         doc.content = content;
         doc.metadata = metadata;
         doc.timestamp = System.currentTimeMillis();
@@ -129,6 +141,9 @@ public class IndexToAzureSearchFunction {
         @JsonProperty("id")
         private String id;
 
+        @JsonProperty("fileName")
+        private String fileName;
+
         @JsonProperty("content")
         private String content;
 
@@ -138,5 +153,12 @@ public class IndexToAzureSearchFunction {
         @JsonProperty("timestamp")
         private long timestamp;
 
+    }
+
+    private String getStackTraceAsString(Throwable t) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        return sw.toString();
     }
 } 

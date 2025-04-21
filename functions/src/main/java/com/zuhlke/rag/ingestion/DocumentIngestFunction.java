@@ -152,10 +152,4 @@ public class DocumentIngestFunction {
         return SUPPORTED_TYPES.stream().anyMatch(fileName.toLowerCase()::endsWith);
     }
 
-    private String getStackTraceAsString(Throwable t) {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      t.printStackTrace(pw);
-      return sw.toString();
-  }
-} 
+}
