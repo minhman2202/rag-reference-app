@@ -21,7 +21,7 @@
         <functionResourceGroup>${resourceGroup}</functionResourceGroup>
         <functionAppRegion>${region}</functionAppRegion>
         <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}</stagingDirectory>
-        <storageConnectionString></storageConnectionString>
+        <storageConnectionString>your-storage-connection-string</storageConnectionString>
     </properties>
 
     <dependencies>

@@ -1,12 +1,13 @@
 param location string
 param functionAppName string
 param appServicePlanName string
+param appInsightsName string
 param storageConnectionString string
 param docIntelligenceEndpoint string
 param docIntelligenceKey string
 param searchEndpoint string
-param searchIndexName string
-param searchServiceName string
+param searchKey string
+param searchIndex string
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
@@ -20,6 +21,16 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   kind: 'functionapp'
   properties: {
     reserved: true
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
   }
 }
 
@@ -61,12 +72,20 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
           value: searchEndpoint
         }
         {
-          name: 'AZURE_SEARCH_INDEX_NAME'
-          value: searchIndexName
+          name: 'AZURE_SEARCH_ADMIN_KEY'
+          value: searchKey
         }
         {
-          name: 'AZURE_SEARCH_SERVICE_NAME'
-          value: searchServiceName
+          name: 'AZURE_SEARCH_INDEX_NAME'
+          value: searchIndex
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
         }
       ]
       linuxFxVersion: 'JAVA|17'

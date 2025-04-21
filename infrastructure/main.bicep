@@ -1,5 +1,6 @@
 param location string = resourceGroup().location
 param environment string = 'dev'
+param appInsightsName string = 'rag-app-insights-${environment}'
 param functionAppName string = 'rag-function-${environment}'
 param storageAccountName string = 'ragstorageinqs4uargpjkc'
 param appServicePlanName string = 'rag-asp-${environment}'
@@ -34,7 +35,6 @@ module search 'modules/search.bicep' = {
   params: {
     location: location
     searchServiceName: searchServiceName
-    searchIndexName: 'documents'
     tags: resourceTags
   }
 }
@@ -43,18 +43,17 @@ module function 'modules/function.bicep' = {
   name: 'function'
   params: {
     location: location
+    appInsightsName: appInsightsName
     functionAppName: functionAppName
     appServicePlanName: appServicePlanName
     storageConnectionString: storage.outputs.connectionString
     docIntelligenceEndpoint: docIntelligence.outputs.endpoint
     docIntelligenceKey: docIntelligence.outputs.key
-    searchEndpoint: search.outputs.endpoint
-    searchIndexName: search.outputs.indexName
-    searchServiceName: search.outputs.serviceName
+    searchEndpoint: search.outputs.searchServiceEndpoint
+    searchKey: search.outputs.searchServiceKey
+    searchIndex: search.outputs.searchServiceName
     tags: resourceTags
   }
 }
 
 output functionAppUrl string = function.outputs.functionAppUrl
-output searchServiceEndpoint string = search.outputs.endpoint
-output searchIndexName string = search.outputs.indexName

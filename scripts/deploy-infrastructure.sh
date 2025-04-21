@@ -43,6 +43,23 @@ check_prerequisites() {
 # Clean up old deployments
 cleanup_old_deployments() {
     echo "Cleaning up old deployments..."
+        
+    # Clean up search service
+    echo "Cleaning up search service..."
+    az search service delete \
+        --name "rag-search-$ENVIRONMENT" \
+        --resource-group $RESOURCE_GROUP \
+        --yes || true
+    
+    # Wait for deletion to complete
+    echo "Waiting for search service cleanup..."
+    while az search service show \
+        --name "rag-search-$ENVIRONMENT" \
+        --resource-group $RESOURCE_GROUP &>/dev/null; do
+        sleep 10
+    done
+    
+    # Clean up old deployment
     az deployment group delete \
         --name main \
         --resource-group $RESOURCE_GROUP \
