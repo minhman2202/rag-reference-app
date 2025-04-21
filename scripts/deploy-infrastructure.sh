@@ -62,8 +62,7 @@ cleanup_old_deployments() {
     # Clean up old deployment
     az deployment group delete \
         --name main \
-        --resource-group $RESOURCE_GROUP \
-        --yes || true
+        --resource-group $RESOURCE_GROUP || true
 }
 
 # Deploy infrastructure
