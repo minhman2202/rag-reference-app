@@ -15,12 +15,9 @@ import com.azure.core.credential.AzureKeyCredential;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.Collections;
-import java.util.Date;
 
 public class IndexToAzureSearchFunction {
     private static final String SEARCH_ENDPOINT = System.getenv("AZURE_SEARCH_ENDPOINT");
@@ -33,7 +30,7 @@ public class IndexToAzureSearchFunction {
     public void run(
         @BlobTrigger(name = "inputBlob", path = "processed/{name}", dataType = "binary", connection = "AzureWebJobsStorage") byte[] inputBlob,
         @BindingName("name") String fileName,
-        @BlobOutput(name = "outputBlob", path = "failed/{name}.txt", connection = "AzureWebJobsStorage") OutputBinding<String> outputBlob,
+        @BlobOutput(name = "failedBlob", path = "failed/{name}_{executionId}", connection = "AzureWebJobsStorage") OutputBinding<byte[]> failedBlob,
         final ExecutionContext context
     ) {
         Logger logger = context.getLogger();
@@ -54,7 +51,7 @@ public class IndexToAzureSearchFunction {
             logger.info("Successfully indexed document: " + fileName);
         } catch (Exception e) {
             logger.severe("Failed to index document: " + e.getMessage());
-            outputBlob.setValue(getStackTraceAsString(e));
+            failedBlob.setValue(inputBlob);
         }
     }
 
@@ -165,10 +162,4 @@ public class IndexToAzureSearchFunction {
 
     }
 
-    private String getStackTraceAsString(Throwable t) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        return sw.toString();
-    }
 } 

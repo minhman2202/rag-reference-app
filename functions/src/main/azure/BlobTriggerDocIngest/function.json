@@ -21,6 +21,13 @@
       "direction": "out",
       "path": "processed/{name}.json",
       "connection": "AzureWebJobsStorage"
+    },
+    {
+      "name": "failedBlob",
+      "type": "blob",
+      "direction": "out",
+      "path": "failed/{name}_{executionId}",
+      "connection": "AzureWebJobsStorage"
     }
   ]
 } 

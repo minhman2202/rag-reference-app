@@ -16,10 +16,10 @@
       "direction": "in"
     },
     {
-      "name": "outputBlob",
+      "name": "failedBlob",
       "type": "blob",
       "direction": "out",
-      "path": "failed/{name}.json",
+      "path": "failed/{name}_{executionId}",
       "connection": "AzureWebJobsStorage"
     }
   ]
