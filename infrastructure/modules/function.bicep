@@ -7,7 +7,6 @@ param docIntelligenceEndpoint string
 param docIntelligenceKey string
 param searchEndpoint string
 param searchKey string
-param searchIndex string
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
@@ -77,7 +76,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AZURE_SEARCH_INDEX_NAME'
-          value: searchIndex
+          value: 'documents'
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'

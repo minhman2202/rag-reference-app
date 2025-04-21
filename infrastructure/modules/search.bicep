@@ -16,6 +16,5 @@ resource searchService 'Microsoft.Search/searchServices@2023-11-01' = {
   tags: tags
 }
 
-output searchServiceName string = searchService.name
 output searchServiceEndpoint string = 'https://${searchService.name}.search.windows.net'
 output searchServiceKey string = listAdminKeys(searchService.id, '2023-11-01').primaryKey

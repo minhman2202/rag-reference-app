@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.azure.search.documents.SearchClient;
 import com.azure.search.documents.SearchClientBuilder;
-import com.azure.identity.DefaultAzureCredentialBuilder;
+import com.azure.core.credential.AzureKeyCredential;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,10 +20,12 @@ import java.io.StringWriter;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.Collections;
+import java.util.Date;
 
 public class IndexToAzureSearchFunction {
     private static final String SEARCH_ENDPOINT = System.getenv("AZURE_SEARCH_ENDPOINT");
     private static final String SEARCH_INDEX_NAME = System.getenv("AZURE_SEARCH_INDEX_NAME");
+    private static final String SEARCH_ADMIN_KEY = System.getenv("AZURE_SEARCH_ADMIN_KEY");
   
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -111,10 +113,12 @@ public class IndexToAzureSearchFunction {
     private SearchDocument buildSearchDocument(String fileName, String content, String metadata) {
         SearchDocument doc = new SearchDocument();
         doc.id = UUID.randomUUID().toString();
-        doc.fileName = fileName;
+        doc.fileName = fileName.replace(".json", "");
         doc.content = content;
         doc.metadata = metadata;
-        doc.timestamp = System.currentTimeMillis();
+        // TODO: Add filepath
+        // TODO: Add embedding
+        doc.uploadDate = System.currentTimeMillis();
         return doc;
     }
 
@@ -122,7 +126,7 @@ public class IndexToAzureSearchFunction {
         try {
             SearchClient client = new SearchClientBuilder()
                 .endpoint(SEARCH_ENDPOINT)
-                .credential(new DefaultAzureCredentialBuilder().build())
+                .credential(new AzureKeyCredential(SEARCH_ADMIN_KEY))
                 .indexName(SEARCH_INDEX_NAME)
                 .buildClient();
 
@@ -147,11 +151,17 @@ public class IndexToAzureSearchFunction {
         @JsonProperty("content")
         private String content;
 
+        // @JsonProperty("embedding")
+        // private String embedding;
+
         @JsonProperty("metadata")
         private String metadata;
 
-        @JsonProperty("timestamp")
-        private long timestamp;
+        // @JsonProperty("filepath")
+        // private String filepath;
+
+        @JsonProperty("uploadDate")
+        private long uploadDate;
 
     }
 

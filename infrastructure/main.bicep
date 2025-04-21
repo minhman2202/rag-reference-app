@@ -51,7 +51,6 @@ module function 'modules/function.bicep' = {
     docIntelligenceKey: docIntelligence.outputs.key
     searchEndpoint: search.outputs.searchServiceEndpoint
     searchKey: search.outputs.searchServiceKey
-    searchIndex: search.outputs.searchServiceName
     tags: resourceTags
   }
 }
