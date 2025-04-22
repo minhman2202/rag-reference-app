@@ -19,7 +19,7 @@
       "name": "failedBlob",
       "type": "blob",
       "direction": "out",
-      "path": "failed/{name}_{executionId}",
+      "path": "failed/{name}",
       "connection": "AzureWebJobsStorage"
     }
   ]

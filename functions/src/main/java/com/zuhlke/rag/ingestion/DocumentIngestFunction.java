@@ -33,7 +33,7 @@ public class DocumentIngestFunction {
         @BlobTrigger(name = "inputBlob", path = "incoming/{name}", dataType = "binary", connection = "AzureWebJobsStorage") byte[] inputBlob,
         @BindingName("name") String fileName,
         @BlobOutput(name = "outputBlob", path = "processed/{name}.json", connection = "AzureWebJobsStorage") OutputBinding<String> outputBlob,
-        @BlobOutput(name = "failedBlob", path = "failed/{name}_{executionId}", connection = "AzureWebJobsStorage") OutputBinding<byte[]> failedBlob,
+        @BlobOutput(name = "failedBlob", path = "failed/{name}", connection = "AzureWebJobsStorage") OutputBinding<byte[]> failedBlob,
         final ExecutionContext context
     ) {
         Logger logger = context.getLogger();
