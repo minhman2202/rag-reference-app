@@ -7,7 +7,7 @@ resource docIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   location: location
   tags: tags
   sku: {
-    name: 'S0'
+    name: 'F0'
   }
   kind: 'FormRecognizer'
   properties: {
